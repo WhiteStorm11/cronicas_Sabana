@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas de la Sabana</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input, button, textarea { margin: 10px; padding: 10px; }
+        img { max-width: 100%; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+    <h1>Crónicas de la Sabana</h1>
+
+    <h2>📖 Comparte tu Relato</h2>
+    <textarea id="relatoTexto" placeholder="Escribe tu historia aquí..."></textarea>
+    <button onclick="guardarRelato()">Guardar Relato</button>
+
+    <h2>🎨 Genera una Ilustración con IA</h2>
+    <input type="text" id="prompt" placeholder="Describe tu imagen">
+    <button onclick="generarImagen()">Generar Imagen</button>
+    <div id="resultado">
+        <img id="imagenGenerada">
+    </div>
+
+    <script>
+        function guardarRelato() {
+            const texto = document.getElementById("relatoTexto").value;
+            if (!texto) {
+                alert("Escribe un relato antes de guardarlo.");
+                return;
+            }
+
+            fetch("/relatos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ texto: texto })
+            })
+            .then(response => response.json())
+            .then(data => alert("Relato guardado con éxito"))
+            .catch(error => console.error("Error:", error));
+        }
+
+        function generarImagen() {
+            const prompt = document.getElementById("prompt").value;
+            const img = document.getElementById("imagenGenerada");
+
+            if (!prompt) {
+                alert("Por favor, escribe una descripción.");
+                return;
+            }
+
+            img.style.display = "none";
+
+            fetch("/generar-ilustracion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.image_base64) {
+                    img.src = "data:image/png;base64," + data.image_base64;
+                    img.style.display = "block";
+                } else {
+                    alert("Error al generar la imagen.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
